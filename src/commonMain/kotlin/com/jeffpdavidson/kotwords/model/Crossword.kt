@@ -4,7 +4,6 @@ import com.jeffpdavidson.kotwords.formats.FONT_FAMILY_TIMES_ROMAN
 import com.jeffpdavidson.kotwords.formats.Puzzleable
 import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
-import kotlinx.coroutines.GlobalScope
 /**
  * A representation of a crossword puzzle with standard numbering.
  *
@@ -25,6 +24,21 @@ import kotlinx.coroutines.GlobalScope
 
 @ExperimentalJsExport
 @JsExport
+class Test(){
+    fun test(): String {
+        return "Test"
+    }
+}
+
+
+
+@ExperimentalJsExport
+@JsExport
+fun test(): String {
+    return "Test"
+}
+
+
 data class Crossword(
     val title: String,
     val creator: String,
@@ -47,65 +61,63 @@ data class Crossword(
         // TODO: Validate standard grid numbering / clues.
     }
 
-    override fun createPuzzle(): Puzzle {
-        return GlobalScope.promise {
-            val acrossPuzzleClues = mutableListOf<Puzzle.Clue>()
-            val downPuzzleClues = mutableListOf<Puzzle.Clue>()
-            val words = mutableListOf<Puzzle.Word>()
+    override suspend fun createPuzzle(): Puzzle {
+        val acrossPuzzleClues = mutableListOf<Puzzle.Clue>()
+        val downPuzzleClues = mutableListOf<Puzzle.Clue>()
+        val words = mutableListOf<Puzzle.Word>()
 
-            // Generate numbers and words based on standard crossword numbering.
-            val gridNumbers = mutableMapOf<Pair<Int, Int>, Int>()
-            forEachCell(grid) { x, y, clueNumber, isAcross, isDown, _ ->
+        // Generate numbers and words based on standard crossword numbering.
+        val gridNumbers = mutableMapOf<Pair<Int, Int>, Int>()
+        forEachCell(grid) { x, y, clueNumber, isAcross, isDown, _ ->
+            if (clueNumber != null) {
+                gridNumbers[x to y] = clueNumber
+            }
+            if (isAcross) {
+                val word = mutableListOf<Puzzle.Coordinate>()
+                var i = x
+                do {
+                    word.add(Puzzle.Coordinate(x = i, y = y))
+                } while (!hasBorder(grid, i++, y, Puzzle.BorderDirection.RIGHT, useBorders = true))
                 if (clueNumber != null) {
-                    gridNumbers[x to y] = clueNumber
-                }
-                if (isAcross) {
-                    val word = mutableListOf<Puzzle.Coordinate>()
-                    var i = x
-                    do {
-                        word.add(Puzzle.Coordinate(x = i, y = y))
-                    } while (!hasBorder(grid, i++, y, Puzzle.BorderDirection.RIGHT, useBorders = true))
-                    if (clueNumber != null) {
-                        acrossPuzzleClues.add(Puzzle.Clue(clueNumber, "$clueNumber", acrossClues[clueNumber] ?: ""))
-                        words.add(Puzzle.Word(clueNumber, word))
-                    }
-                }
-                if (isDown) {
-                    val word = mutableListOf<Puzzle.Coordinate>()
-                    var j = y
-                    do {
-                        word.add(Puzzle.Coordinate(x = x, y = j))
-                    } while (!hasBorder(grid, x, j++, Puzzle.BorderDirection.BOTTOM, useBorders = true))
-                    if (clueNumber != null) {
-                        downPuzzleClues.add(Puzzle.Clue(1000 + clueNumber, "$clueNumber", downClues[clueNumber] ?: ""))
-                        words.add(Puzzle.Word(1000 + clueNumber, word))
-                    }
+                    acrossPuzzleClues.add(Puzzle.Clue(clueNumber, "$clueNumber", acrossClues[clueNumber] ?: ""))
+                    words.add(Puzzle.Word(clueNumber, word))
                 }
             }
-
-            val acrossTitle = if (hasHtmlClues) "<b>Across</b>" else "Across"
-            val downTitle = if (hasHtmlClues) "<b>Down</b>" else "Down"
-            return Puzzle(
-                title,
-                creator,
-                copyright,
-                description,
-                grid.mapIndexed { y, row ->
-                    row.mapIndexed { x, cell ->
-                        val number = gridNumbers[x to y]
-                        if (number == null) {
-                            cell
-                        } else {
-                            cell.copy(number = number.toString())
-                        }
-                    }
-                },
-                listOf(Puzzle.ClueList(acrossTitle, acrossPuzzleClues), Puzzle.ClueList(downTitle, downPuzzleClues)),
-                words.sortedBy { it.id },
-                hasHtmlClues = hasHtmlClues,
-                diagramless = diagramless,
-            )
+            if (isDown) {
+                val word = mutableListOf<Puzzle.Coordinate>()
+                var j = y
+                do {
+                    word.add(Puzzle.Coordinate(x = x, y = j))
+                } while (!hasBorder(grid, x, j++, Puzzle.BorderDirection.BOTTOM, useBorders = true))
+                if (clueNumber != null) {
+                    downPuzzleClues.add(Puzzle.Clue(1000 + clueNumber, "$clueNumber", downClues[clueNumber] ?: ""))
+                    words.add(Puzzle.Word(1000 + clueNumber, word))
+                }
+            }
         }
+
+        val acrossTitle = if (hasHtmlClues) "<b>Across</b>" else "Across"
+        val downTitle = if (hasHtmlClues) "<b>Down</b>" else "Down"
+        return Puzzle(
+            title,
+            creator,
+            copyright,
+            description,
+            grid.mapIndexed { y, row ->
+                row.mapIndexed { x, cell ->
+                    val number = gridNumbers[x to y]
+                    if (number == null) {
+                        cell
+                    } else {
+                        cell.copy(number = number.toString())
+                    }
+                }
+            },
+            listOf(Puzzle.ClueList(acrossTitle, acrossPuzzleClues), Puzzle.ClueList(downTitle, downPuzzleClues)),
+            words.sortedBy { it.id },
+            hasHtmlClues = hasHtmlClues,
+            diagramless = diagramless,
+        )
     }
 
 

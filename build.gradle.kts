@@ -24,11 +24,8 @@ kotlin {
     jvmToolchain(18)
 
     js(IR) {
-        browser {
-            webpackTask {
-                output.libraryTarget = "commonjs2"
-            }
-        }
+        browser{}
+        nodejs()
         binaries.executable()
     }
 
@@ -57,17 +54,7 @@ kotlin {
             }
         }
 
-        val commonTest by getting {
-            dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
-                implementation("org.jetbrains.kotlin:kotlin-test-common")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
-            }
 
-            languageSettings {
-                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
-            }
-        }
 
         val jvmMain by getting {
             dependencies {
@@ -77,15 +64,7 @@ kotlin {
             }
         }
 
-        val jvmTest by getting {
-            dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test-junit")
-            }
 
-            languageSettings {
-                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
-            }
-        }
 
         val jsMain by getting {
             dependencies {
@@ -95,16 +74,7 @@ kotlin {
             }
         }
 
-        val jsTest by getting {
-            dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test-js")
-                implementation(npm("pdfjs-dist", "3.3.122"))
-            }
-
-            languageSettings {
-                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
-            }
-        }
+        
     }
 }
 
