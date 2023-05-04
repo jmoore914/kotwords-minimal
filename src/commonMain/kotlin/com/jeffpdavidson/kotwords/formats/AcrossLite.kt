@@ -7,6 +7,9 @@ import okio.BufferedSink
 import okio.BufferedSource
 import okio.use
 
+import kotlin.js.ExperimentalJsExport
+import kotlin.js.JsExport
+
 private const val FILE_MAGIC = "ACROSS&DOWN"
 private const val FORMAT_VERSION = "1.4"
 private const val UTF8_FORMAT_VERSION = "2.0"

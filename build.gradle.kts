@@ -21,10 +21,14 @@ kotlin {
         withJava()
     }
 
-    jvmToolchain(8)
+    jvmToolchain(18)
 
     js(IR) {
-        browser {}
+        browser {
+            webpackTask {
+                output.libraryTarget = "commonjs2"
+            }
+        }
         binaries.executable()
     }
 
